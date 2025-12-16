@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonationBridge - Design Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2E7D32; /* Brand green color */
+            --primary-dark: #1B5E20;
+            --primary-light: #4CAF50;
+            --secondary: #388E3C;
+            --accent: #81C784;
+            --light: #E8F5E9;
+            --dark: #1B5E20;
+            --gray: #757575;
+            --light-gray: #F5F5F5;
+            --white: #FFFFFF;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --border-radius: 8px; /* Material Design rounded corners */
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #212121; /* High contrast text */
+            background-color: var(--white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 24px 24px; /* Rounded bottom corners */
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            background-size: 200px;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-200px, -200px); }
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            animation: fadeInDown 1s ease;
+            font-weight: 300; /* Material Design font weight */
+        }
+
+        header .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1s ease 0.3s both;
+            font-weight: 400;
+        }
+
+        header .description {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        nav {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        nav li {
+            margin: 0 1.5rem;
+        }
+
+        nav a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 1rem;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 80px 0;
+            position: relative;
+            background-color: var(--white);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            position: relative;
+            font-weight: 400;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Use Cases Section */
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .use-case-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E0E0E0;
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .use-case-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .use-case-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .use-case-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #212121;
+            font-weight: 500;
+        }
+
+        .use-case-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .use-case-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #EEEEEE;
+            display: flex;
+            align-items: center;
+        }
+
+        .use-case-list li:last-child {
+            border-bottom: none;
+        }
+
+        .use-case-list li i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.8rem 1.6rem;
+            border-radius: 4px; /* Material Design button */
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .close {
+            color: var(--white);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .use-case-detail {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #EEEEEE;
+        }
+
+        .use-case-detail:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .use-case-detail h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .use-case-detail p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .use-case-detail .use-case-id {
+            display: inline-block;
+            background-color: var(--light);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Sequence Diagrams Section */
+        .diagrams-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #EEEEEE;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--gray);
+            transition: var(--transition);
+            position: relative;
+            font-weight: 500;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            background-color: var(--light);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .diagram-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid #E0E0E0;
+        }
+
+        .diagram-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            background-color: var(--white);
+            border: 1px solid #E0E0E0;
+            transition: var(--transition);
+        }
+
+        .diagram-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .diagram-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Class Diagrams Section */
+        .class-diagrams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .class-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            border: 1px solid #E0E0E0;
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .class-header h3 {
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        .class-body {
+            padding: 1.5rem;
+        }
+
+        .class-diagram-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            background-color: var(--white);
+            border: 1px solid #E0E0E0;
+            transition: var(--transition);
+        }
+
+        .class-diagram-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .class-details {
+            margin-top: 1rem;
+        }
+
+        .class-details h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .class-details p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Subsystem Diagram Section */
+        .subsystem-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid #E0E0E0;
+        }
+
+        .subsystem-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            background-color: var(--white);
+            border: 1px solid #E0E0E0;
+            transition: var(--transition);
+        }
+
+        .subsystem-image:hover {
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .subsystem-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .component-item {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid #C8E6C9;
+        }
+
+        .component-item:hover {
+            background: var(--primary);
+            color: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Design Goals Section */
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .goal-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #E0E0E0;
+        }
+
+        .goal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+        }
+
+        .goal-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .goal-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #212121;
+            font-weight: 500;
+        }
+
+        .goal-list {
+            list-style: none;
+        }
+
+        .goal-list li {
+            padding: 0.4rem 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .goal-list li i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary-dark);
+            color: var(--white);
+            padding: 3rem 0;
+            text-align: center;
+            border-radius: 24px 24px 0 0; /* Rounded top corners */
+        }
+
+        footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .team {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            header .tagline {
+                font-size: 1.2rem;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+            }
+            
+            nav li {
+                margin: 0.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .diagrams-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <h1>DonationBridge</h1>
+            <p class="tagline">Connecting Donors, NGOs, and Riders for Efficient Donation Management</p>
+            <p class="description">A comprehensive platform facilitating donation collection, delivery, and management with transparency and efficiency</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><a href="#use-cases">Use Cases</a></li>
+            <li><a href="#sequence-diagrams">Sequence Diagrams</a></li>
+            <li><a href="#class-diagrams">Class Diagrams</a></li>
+            <li><a href="#subsystem">Subsystem</a></li>
+            <li><a href="#design-goals">Design Goals</a></li>
+        </ul>
+    </nav>
+
+    <!-- Use Cases Section -->
+    <section id="use-cases">
+        <div class="container">
+            <h2 class="section-title">System Use Cases</h2>
+            <div class="use-cases-grid">
+                <!-- Rider Use Cases -->
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+                    <h3>Rider Use Cases</h3>
+                    <ul class="use-case-list">
+                        <li><i class="fas fa-check-circle"></i> UC-R01: Register as Rider</li>
+                        <li><i class="fas fa-check-circle"></i> UC-R03: View Pickup Assignments</li>
+                        <li><i class="fas fa-check-circle"></i> UC-R09: Track Earnings</li>
+                    </ul>
+                    <button class="btn view-details-btn" data-category="rider">View Details</button>
+                </div>
+
+                <!-- Admin Use Cases -->
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>System Administrator</h3>
+                    <ul class="use-case-list">
+                        <li><i class="fas fa-check-circle"></i> UC-SA01: Manage User Accounts</li>
+                        <li><i class="fas fa-check-circle"></i> UC-SA02: Verify NGO Registration</li>
+                        <li><i class="fas fa-check-circle"></i> UC-SA05: Resolve Disputes</li>
+                    </ul>
+                    <button class="btn view-details-btn" data-category="admin">View Details</button>
+                </div>
+
+                <!-- Donor Use Cases -->
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <h3>Donor Use Cases</h3>
+                    <ul class="use-case-list">
+                        <li><i class="fas fa-check-circle"></i> UC-D01: Register as Donor</li>
+                        <li><i class="fas fa-check-circle"></i> UC-D07: Create Donation Request</li>
+                        <li><i class="fas fa-check-circle"></i> UC-D08: Schedule Pickup</li>
+                    </ul>
+                    <button class="btn view-details-btn" data-category="donor">View Details</button>
+                </div>
+
+                <!-- NGO Use Cases -->
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3>NGO Use Cases</h3>
+                    <ul class="use-case-list">
+                        <li><i class="fas fa-check-circle"></i> UC-N01: Register NGO</li>
+                        <li><i class="fas fa-check-circle"></i> UC-N03: View Donation Requests</li>
+                        <li><i class="fas fa-check-circle"></i> UC-N06: Generate Reports</li>
+                    </ul>
+                    <button class="btn view-details-btn" data-category="ngo">View Details</button>
+                </div>
+                
+                <!-- Complete Use Case Diagram -->
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3>Complete Use Case Diagram</h3>
+                    <ul class="use-case-list">
+                        <li><i class="fas fa-check-circle"></i> System Overview</li>
+                        <li><i class="fas fa-check-circle"></i> All Actor Interactions</li>
+                        <li><i class="fas fa-check-circle"></i> Complete Flow</li>
+                    </ul>
+                    <button class="btn view-diagram-btn">View Diagram</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal for Use Case Details -->
+    <div id="useCaseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Use Case Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Complete Use Case Diagram -->
+    <div id="useCaseDiagramModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Complete Use Case Diagram</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="diagram-container">
+                    <img src="./Images/Adobe Express - file.png" alt="Complete Use Case Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> This diagram illustrates all the use cases of the DonationBridge system, showing the interactions between the different actors (Donor, NGO, Rider, and System Administrator) and the system.</p>
+                    <div class="diagram-actions">
+                        <a href="images/complete-use-case-diagram.png" download class="btn">Download Diagram</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sequence Diagrams Section -->
+    <section id="sequence-diagrams">
+        <div class="container">
+            <h2 class="section-title">Sequence Diagrams</h2>
+            <div class="diagrams-tabs">
+                <button class="tab-btn active" data-tab="uc-do1">UC-DO1</button>
+                <button class="tab-btn" data-tab="uc-do2">UC-DO2</button>
+                <button class="tab-btn" data-tab="uc-sa02">UC-SA02</button>
+                <button class="tab-btn" data-tab="uc-sa03">UC-SA03</button>
+                <button class="tab-btn" data-tab="uc-sa04">UC-SA04</button>
+                <button class="tab-btn" data-tab="uc-sa05">UC-SA05</button>
+                <button class="tab-btn" data-tab="uc-sa06">UC-SA06</button>
+                <button class="tab-btn" data-tab="uc-sa07">UC-SA07</button>
+                <button class="tab-btn" data-tab="uc-sa08">UC-SA08</button>
+            </div>
+
+            <!-- UC-DO1 Tab Content -->
+            <div class="tab-content active" id="uc-do1">
+                <div class="diagram-container">
+                    <img src="./Images/UC-DO1-SD.png" alt="UC-D01: Register as Donor Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Shows the interaction between Donor, Authentication Service, and System during the donor registration process.</p>
+                    <div class="diagram-actions">
+                        <a href="images/UC-DO1-SD.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="uc-do2">
+                <div class="diagram-container">
+                    <img src="./Images/UC-DO2-SD.png" alt="UC-D02: Login to accout Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Shows the interaction between Donor, Authentication Service, and System during the donor login process.</p>
+                    <div class="diagram-actions">
+                        <a href="images/UC-DO2-SD.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa02">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA02-SD.png" alt="UC-SA02: NGO Verification Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Illustrates the process of NGO verification by System Administrator including document review and approval.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa02.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa03">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA03-SD.png" alt="UC-SA03: Approval Notification Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Shows the notification flow when an NGO registration is approved or rejected by the administrator.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa03.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa04">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA04-SD.png" alt="UC-SA04: Monitor Pickups Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Demonstrates how administrators monitor active donation pickups in real-time.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa04.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa05">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA05-SD.png" alt="UC-SA05: Resolve Disputes Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Outlines the dispute resolution process between donors, riders, and NGOs.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa05.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa06">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA06-SD.png" alt="UC-SA06: Customer Support Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Shows the process of handling general user inquiries and support tickets.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa06.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa07">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA07-SD.png" alt="UC-SA07: Manage Categories Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Illustrates how administrators manage donation categories and item types.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa07.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="uc-sa08">
+                <div class="diagram-container">
+                    <img src="./Images/UCSA08-SD.png" alt="UC-SA08: Send Announcements Sequence Diagram" class="diagram-image">
+                    <p><strong>Description:</strong> Shows the process of sending platform announcements to users.</p>
+                    <div class="diagram-actions">
+                        <a href="images/uc-sa08.png" download class="btn">Download Diagram</a>
+                        <a href="#" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Class Diagrams Section -->
+    <section id="class-diagrams">
+        <div class="container">
+            <h2 class="section-title">Class Diagrams</h2>
+            <div class="class-diagrams-grid">
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-D08: Schedule Donation Pickup</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-D08 Schedule Donation Pickup Donor.png" alt="UC-D08: Schedule Donation Pickup Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Donor, Donation Request, Pickup Schedule, Notification</p>
+                            <h4>Relationships:</h4>
+                            <p>Donor creates Donation Request which has a Pickup Schedule</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-R04/R05: Accept/Decline Job</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-R04 R05 Accept or Decline Pickup Job Rider.png" alt="UC-R04/R05: Accept/Decline Job Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Rider, Pickup Job, Job Assignment</p>
+                            <h4>Relationships:</h4>
+                            <p>Rider accepts/declines Pickup Job creating Job Assignment</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-R08: Confirm Delivery</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-R08 Confirm Delivery to NGO Rider.png" alt="UC-R08: Confirm Delivery Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Rider, Delivery, NGO, Donation Request</p>
+                            <h4>Relationships:</h4>
+                            <p>Rider completes Delivery to NGO for Donation Request</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-N04: NGO Accept Donation</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-N04 NGO Accept Donation Request NGO.png" alt="UC-N04: NGO Accept Donation Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>NGO, Donation Request, Acceptance Record</p>
+                            <h4>Relationships:</h4>
+                            <p>NGO accepts Donation Request creating Acceptance Record</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-SA02/SA03: Verify NGO/Rider</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-SA02 SA03 Admin Verifies NGO-Rider.png" alt="UC-SA02/SA03: Verify NGO/Rider Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Admin, NGO, Rider, Verification Request, Document</p>
+                            <h4>Relationships:</h4>
+                            <p>Admin verifies NGO/Rider by reviewing Documents</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-R10: Rider Payout Request</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-R10 Rider Requests Payout.png" alt="UC-R10: Rider Payout Request Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Rider, Payout Request, Earnings Record, Payment Method</p>
+                            <h4>Relationships:</h4>
+                            <p>Rider requests Payout based on Earnings Record</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <div class="class-header">
+                        <h3>UC-D04: Browse NGOs</h3>
+                    </div>
+                    <div class="class-body">
+                        <img src="./Images/UC-D04  Browse Verified NGOs (Donor).png" alt="UC-D04: Browse NGOs Class Diagram" class="class-diagram-image">
+                        <div class="class-details">
+                            <h4>Key Entities:</h4>
+                            <p>Donor, NGO, Search Criteria, NGO Profile</p>
+                            <h4>Relationships:</h4>
+                            <p>Donor searches NGOs using Search Criteria</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subsystem Diagram Section -->
+    <section id="subsystem">
+        <div class="container">
+            <h2 class="section-title">Subsystem Architecture</h2>
+            <div class="subsystem-container">
+                <img src="./Images/Sub system diagram final.png" alt="Subsystem Architecture Diagram" class="subsystem-image">
+                <p><strong>Description:</strong> The subsystem diagram illustrates the major components of the DonationBridge platform and their interactions, showing how different modules communicate to provide a seamless donation management experience.</p>
+                
+                <div class="subsystem-components">
+                    <div class="component-item">
+                        <i class="fas fa-user-shield"></i>
+                        <h4>Authentication</h4>
+                    </div>
+                    <div class="component-item">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h4>Donations</h4>
+                    </div>
+                    <div class="component-item">
+                        <i class="fas fa-motorcycle"></i>
+                        <h4>Logistics</h4>
+                    </div>
+                    <div class="component-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <h4>Reporting</h4>
+                    </div>
+                    <div class="component-item">
+                        <i class="fas fa-bell"></i>
+                        <h4>Notifications</h4>
+                    </div>
+                    <div class="component-item">
+                        <i class="fas fa-credit-card"></i>
+                        <h4>Payments</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Design Goals Section -->
+    <section id="design-goals">
+        <div class="container">
+            <h2 class="section-title">Design Principles</h2>
+            <div class="goals-grid">
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3>Performance</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> Response time < 2 sec on 4G</li>
+                        <li><i class="fas fa-check"></i> Support 1000 concurrent users</li>
+                        <li><i class="fas fa-check"></i> Map updates every 5 sec</li>
+                    </ul>
+                </div>
+
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-hand-pointer"></i>
+                    </div>
+                    <h3>Usability</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> 3-tap donation scheduling</li>
+                        <li><i class="fas fa-check"></i> Auto-complete forms</li>
+                        <li><i class="fas fa-check"></i> Offline mode support</li>
+                    </ul>
+                </div>
+
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Security</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> End-to-end HTTPS encryption</li>
+                        <li><i class="fas fa-check"></i> Firebase OTP verification</li>
+                        <li><i class="fas fa-check"></i> Role-based access control</li>
+                    </ul>
+                </div>
+
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Reliability</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> 99.5% uptime guarantee</li>
+                        <li><i class="fas fa-check"></i> Daily automated backups</li>
+                        <li><i class="fas fa-check"></i> Graceful degradation</li>
+                    </ul>
+                </div>
+
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </div>
+                    <h3>Scalability</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> Multi-city deployment</li>
+                        <li><i class="fas fa-check"></i> Firebase auto-scaling</li>
+                        <li><i class="fas fa-check"></i> 100+ concurrent requests</li>
+                    </ul>
+                </div>
+
+                <div class="goal-card">
+                    <div class="goal-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3>Maintainability</h3>
+                    <ul class="goal-list">
+                        <li><i class="fas fa-check"></i> FlutterFlow no-code UI</li>
+                        <li><i class="fas fa-check"></i> Modular architecture</li>
+                        <li><i class="fas fa-check"></i> Custom code only for core</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <h3>Bahria University, Islamabad Campus</h3>
+            <p>Department of Computer Sciences - Software Engineering Project</p>
+            <div class="team">
+                <p>Team Members:</p>
+                <p>Syed Tawasal Mehdi (01-135242-082)</p>
+                <p>Muhammad Rafay (01-135232-060)</p>
+                <p>Jassim Arshad (01-135242-029)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Use case data
+        const useCasesData = {
+            rider: {
+                title: "Rider Use Cases",
+                cases: [
+                    {
+                        id: "UC-R01",
+                        name: "Register as Rider",
+                        description: "Allow new riders to create an account on the DonationBridge platform. This includes phone verification, profile setup, and document upload.",
+                        actors: "Rider (Primary), Authentication Service, SMS Gateway",
+                        purpose: "Enable riders to join the platform and start accepting donation pickup jobs",
+                        precondition: "App installed; Rider not already registered; Internet available",
+                        trigger: "Rider opens app and selects 'Sign Up as Rider'"
+                    },
+                    {
+                        id: "UC-R02",
+                        name: "Upload Verification Documents",
+                        description: "Allow rider to upload ID documents required for verification including CNIC, license, and other necessary documents.",
+                        actors: "Rider, Cloud Storage Service",
+                        purpose: "Verify rider identity and eligibility to work on the platform",
+                        precondition: "Rider account exists; Internet available",
+                        trigger: "System automatically redirects after UC-R01 OR Rider manually opens Verification tab"
+                    },
+                    {
+                        id: "UC-R03",
+                        name: "View Available Pickup Assignments",
+                        description: "Show rider the list of available donation pickup jobs in their area with details like donor address, distance, time slot, item type, and earnings.",
+                        actors: "Rider",
+                        purpose: "Enable riders to find and select suitable pickup jobs",
+                        precondition: "Rider is verified and logged in",
+                        trigger: "Rider taps Available Jobs"
+                    },
+                    {
+                        id: "UC-R04",
+                        name: "Accept Pickup Job",
+                        description: "Assign a selected pickup job to the rider, updating the job status and notifying the donor.",
+                        actors: "Rider",
+                        purpose: "Allow riders to commit to pickup jobs",
+                        precondition: "Job is available for assignment",
+                        trigger: "Rider taps Accept on a job"
+                    },
+                    {
+                        id: "UC-R05",
+                        name: "Decline Pickup Job",
+                        description: "Allow rider to reject a job they do not want, returning it to the available pool for other riders.",
+                        actors: "Rider",
+                        purpose: "Enable riders to opt out of unsuitable jobs",
+                        precondition: "Job has not been assigned yet",
+                        trigger: "Rider taps Decline"
+                    },
+                    {
+                        id: "UC-R06",
+                        name: "Navigate to Pickup Location",
+                        description: "Guide rider to donor's address using GPS navigation and provide real-time location updates.",
+                        actors: "Rider",
+                        purpose: "Help riders efficiently reach pickup locations",
+                        precondition: "Job is assigned to the rider",
+                        trigger: "Rider taps Navigate"
+                    },
+                    {
+                        id: "UC-R07",
+                        name: "Confirm Item Pickup",
+                        description: "Record proof that items were collected from donor including photos, donor signature, and checklist completion.",
+                        actors: "Rider",
+                        purpose: "Verify successful pickup and maintain accountability",
+                        precondition: "Rider has reached donor location",
+                        trigger: "Rider taps Confirm Pickup"
+                    },
+                    {
+                        id: "UC-R08",
+                        name: "Deliver to NGO Location",
+                        description: "Complete the donation delivery process by handing over items to NGO and obtaining proof of delivery.",
+                        actors: "Rider",
+                        purpose: "Finalize the donation process and update rider earnings",
+                        precondition: "Items have been picked up",
+                        trigger: "Rider taps Mark as Delivered"
+                    },
+                    {
+                        id: "UC-R09",
+                        name: "Track Earnings",
+                        description: "Display rider's completed job income with filters for daily, weekly, and monthly views.",
+                        actors: "Rider",
+                        purpose: "Allow riders to monitor their income and job history",
+                        precondition: "Completed jobs exist",
+                        trigger: "Rider opens Earnings screen"
+                    },
+                    {
+                        id: "UC-R10",
+                        name: "Request Payout",
+                        description: "Allow rider to withdraw earnings through various payment methods after reaching the minimum threshold.",
+                        actors: "Rider, Payment Gateway",
+                        purpose: "Enable riders to access their earned money",
+                        precondition: "Rider has minimum withdrawable balance",
+                        trigger: "Rider taps Request Payout"
+                    }
+                ]
+            },
+            admin: {
+                title: "System Administrator Use Cases",
+                cases: [
+                    {
+                        id: "UC-SA01",
+                        name: "Manage User Accounts",
+                        description: "Create, view, edit, suspend, or delete user accounts across the platform (Donors, Riders, NGOs).",
+                        actors: "System Administrator",
+                        purpose: "Maintain user database and ensure platform security",
+                        precondition: "Admin is logged into the Admin Dashboard",
+                        trigger: "Admin navigates to User Management section"
+                    },
+                    {
+                        id: "UC-SA02",
+                        name: "Verify NGO Registration",
+                        description: "Review and approve or reject new NGO registrations and their uploaded documents.",
+                        actors: "System Administrator",
+                        purpose: "Ensure only legitimate NGOs join the platform",
+                        precondition: "At least one NGO registration is in 'Pending Verification' status",
+                        trigger: "Admin navigates to NGO Verification Queue"
+                    },
+                    {
+                        id: "UC-SA03",
+                        name: "Send Approval Notification",
+                        description: "Automatically notify an NGO admin of their registration approval or rejection.",
+                        actors: "System Administrator (via System), Notification Service",
+                        purpose: "Communicate registration decisions to NGOs",
+                        precondition: "Admin has just approved or rejected an NGO in UC-SA02",
+                        trigger: "UC-SA02, Step 6"
+                    },
+                    {
+                        id: "UC-SA04",
+                        name: "Monitor Active Pickups",
+                        description: "View real-time status and details of all ongoing donation pickups for oversight and support.",
+                        actors: "System Administrator",
+                        purpose: "Provide operational oversight and support",
+                        precondition: "Admin is logged into the Admin Dashboard",
+                        trigger: "Admin navigates to Active Operations > Live Pickups"
+                    },
+                    {
+                        id: "UC-SA05",
+                        name: "Resolve Disputes",
+                        description: "Investigate and adjudicate disputes raised between platform users (e.g., missing items, damaged goods, service issues).",
+                        actors: "System Administrator, Donor, Rider, NGO Admin",
+                        purpose: "Handle conflicts and maintain platform integrity",
+                        precondition: "A dispute ticket has been raised and is in 'Awaiting Review' status",
+                        trigger: "Admin navigates to Support > Open Disputes"
+                    },
+                    {
+                        id: "UC-SA06",
+                        name: "Provide Customer Support",
+                        description: "Address general user inquiries, technical issues, and feedback not classified as disputes.",
+                        actors: "System Administrator, Donor, Rider, NGO Admin",
+                        purpose: "Assist users with platform-related questions",
+                        precondition: "Admin is logged into the Admin Dashboard",
+                        trigger: "Admin navigates to Support > General Inquiries OR a new support ticket is assigned"
+                    },
+                    {
+                        id: "UC-SA07",
+                        name: "Manage Donation Categories",
+                        description: "Create, edit, deactivate, or reorder the categories of items that donors can select (e.g., Clothes, Books, Food, Furniture).",
+                        actors: "System Administrator",
+                        purpose: "Maintain organized donation item classification",
+                        precondition: "Admin is logged into the Admin Dashboard",
+                        trigger: "Admin navigates to Platform Settings > Donation Categories"
+                    },
+                    {
+                        id: "UC-SA08",
+                        name: "Send Platform Announcements",
+                        description: "Broadcast important messages, updates, or policy changes to all or a subset of platform users.",
+                        actors: "System Administrator, Notification Service",
+                        purpose: "Communicate important information to users",
+                        precondition: "Admin is logged into the Admin Dashboard",
+                        trigger: "Admin navigates to Communications > Send Announcement"
+                    }
+                ]
+            },
+            donor: {
+                title: "Donor Use Cases",
+                cases: [
+                    {
+                        id: "UC-D01",
+                        name: "Register as Donor",
+                        description: "Enable new users to create a donor account on Donation Bridge platform with phone, email, or social authentication.",
+                        actors: "Donor (Primary), SMS Gateway (Secondary), Authentication Service (Secondary)",
+                        purpose: "Allow donors to join the platform and start donating",
+                        precondition: "Donor has downloaded Donation Bridge mobile application",
+                        trigger: "Donor opens application for the first time and clicks 'Sign Up'"
+                    },
+                    {
+                        id: "UC-D02",
+                        name: "Login to Account",
+                        description: "Allow registered donors to access their account using phone OTP, email/password, or social login.",
+                        actors: "Donor (Primary), Authentication Service (Secondary), SMS Gateway (Secondary)",
+                        purpose: "Provide secure access to donor accounts",
+                        precondition: "Donor has registered account",
+                        trigger: "Donor opens application or session has expired"
+                    },
+                    {
+                        id: "UC-D03",
+                        name: "Manage Profile",
+                        description: "Allow donor to view and update personal information including name, contact details, addresses, and preferences.",
+                        actors: "Donor (Primary), Cloud Storage Service (Secondary)",
+                        purpose: "Enable donors to maintain their account information",
+                        precondition: "Donor is logged in",
+                        trigger: "Donor clicks 'Profile' or 'Settings' from menu"
+                    },
+                    {
+                        id: "UC-D04",
+                        name: "Browse Verified NGOs",
+                        description: "Allow donor to discover and explore trustworthy NGOs with filtering and search capabilities.",
+                        actors: "Donor (Primary)",
+                        purpose: "Help donors find suitable organizations for donations",
+                        precondition: "Donor is logged in",
+                        trigger: "Donor clicks 'Browse NGOs' or 'Find NGOs' from home screen"
+                    },
+                    {
+                        id: "UC-D05",
+                        name: "Search NGOs by Cause",
+                        description: "Find NGOs matching specific donation interests using search functionality and predefined cause categories.",
+                        actors: "Donor (Primary)",
+                        purpose: "Enable targeted NGO discovery based on donation causes",
+                        precondition: "Donor is logged in",
+                        trigger: "Donor has specific cause in mind and clicks search"
+                    },
+                    {
+                        id: "UC-D06",
+                        name: "View NGO Profile",
+                        description: "Verify NGO legitimacy and view impact details including mission, ratings, and contact information.",
+                        actors: "Donor (Primary)",
+                        purpose: "Provide detailed NGO information for informed donation decisions",
+                        precondition: "Donor is browsing NGO list",
+                        trigger: "Donor clicks on NGO card from search/browse results"
+                    },
+                    {
+                        id: "UC-D07",
+                        name: "Create Donation Request",
+                        description: "Allow donor to initiate donation of items with detailed descriptions, photos, and category selection.",
+                        actors: "Donor (Primary), Cloud Storage (Secondary)",
+                        purpose: "Enable donors to list items for donation",
+                        precondition: "Donor is logged in",
+                        trigger: "Donor clicks 'Donate Now' or 'Create Donation'"
+                    },
+                    {
+                        id: "UC-D08",
+                        name: "Schedule Doorstep Pickup",
+                        description: "Book convenient pickup time for donations with address selection and time slot availability.",
+                        actors: "Donor (Primary), System (Secondary)",
+                        purpose: "Arrange collection of donated items",
+                        precondition: "Donation request created",
+                        trigger: "Automatically after creating donation OR donor clicks 'Schedule Pickup'"
+                    },
+                    {
+                        id: "UC-D09",
+                        name: "Edit Donation Request",
+                        description: "Modify donation details before pickup including item descriptions, quantities, and pickup time.",
+                        actors: "Donor (Primary)",
+                        purpose: "Allow donors to update donation information",
+                        precondition: "Donation exists with status 'Pending' or 'Scheduled'",
+                        trigger: "Donor clicks 'Edit' on donation from donation history"
+                    },
+                    {
+                        id: "UC-D10",
+                        name: "View Donation History",
+                        description: "Review all past donations with filtering options and detailed views of each donation.",
+                        actors: "Donor (Primary)",
+                        purpose: "Provide donors with their donation record",
+                        precondition: "Donor is logged in",
+                        trigger: "Donor clicks 'My Donations' or 'History' from menu"
+                    }
+                ]
+            },
+            ngo: {
+                title: "NGO Use Cases",
+                cases: [
+                    {
+                        id: "UC-N01",
+                        name: "Register NGO",
+                        description: "Allow an NGO to create an account on the system with basic information and contact details.",
+                        actors: "NGO Admin",
+                        purpose: "Enable NGOs to join the platform",
+                        precondition: "NGO has valid email/phone; App installed; Internet available",
+                        trigger: "NGO Admin selects Register as NGO"
+                    },
+                    {
+                        id: "UC-N02",
+                        name: "Setup NGO Profile",
+                        description: "Allow NGO to complete profile setup including uploading necessary documents and organization details.",
+                        actors: "NGO Admin",
+                        purpose: "Complete NGO registration with required documentation",
+                        precondition: "NGO has an active account",
+                        trigger: "System redirects after registration OR Admin selects 'Setup Profile'"
+                    },
+                    {
+                        id: "UC-N03",
+                        name: "View Incoming Donation Requests",
+                        description: "Show list of donation requests assigned to the NGO with donor details and item information.",
+                        actors: "NGO Admin",
+                        purpose: "Allow NGOs to review and manage donation requests",
+                        precondition: "NGO is approved and logged in",
+                        trigger: "Admin opens 'Incoming Requests'"
+                    },
+                    {
+                        id: "UC-N04",
+                        name: "Accept Donation Request",
+                        description: "Allow NGO to approve a donation so it can be handled by the rider and scheduled for pickup.",
+                        actors: "NGO Admin",
+                        purpose: "Confirm NGO's willingness to receive donations",
+                        precondition: "Donation request is pending",
+                        trigger: "Admin selects Accept while viewing a request"
+                    },
+                    {
+                        id: "UC-N05",
+                        name: "Decline Donation Request",
+                        description: "Allow NGO to refuse a donation request if it doesn't meet their requirements or capacity.",
+                        actors: "NGO Admin",
+                        purpose: "Enable NGOs to decline unsuitable donations",
+                        precondition: "Request is pending",
+                        trigger: "Admin selects Decline"
+                    },
+                    {
+                        id: "UC-N06",
+                        name: "Generate Reports",
+                        description: "View analytics of donations received, accepted, and declined with filtering and export options.",
+                        actors: "NGO Admin",
+                        purpose: "Provide NGOs with insights into their donation activities",
+                        precondition: "NGO has data available",
+                        trigger: "Admin selects 'Generate Reports'"
+                    }
+                ]
+            }
+        };
+
+        // Modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('useCaseModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            const closeBtn = document.querySelector('.close');
+            const viewDetailsBtns = document.querySelectorAll('.view-details-btn');
+
+            // Open modal when view details button is clicked
+            viewDetailsBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    const data = useCasesData[category];
+                    
+                    if (data) {
+                        modalTitle.textContent = data.title;
+                        
+                        let content = '';
+                        data.cases.forEach(useCase => {
+                            content += `
+                                <div class="use-case-detail">
+                                    <div class="use-case-id">${useCase.id}</div>
+                                    <h3>${useCase.name}</h3>
+                                    <p><strong>Description:</strong> ${useCase.description}</p>
+                                    <p><strong>Actors:</strong> ${useCase.actors}</p>
+                                    <p><strong>Purpose:</strong> ${useCase.purpose}</p>
+                                    <p><strong>Precondition:</strong> ${useCase.precondition}</p>
+                                    <p><strong>Trigger:</strong> ${useCase.trigger}</p>
+                                </div>
+                            `;
+                        });
+                        
+                        modalBody.innerHTML = content;
+                        modal.style.display = 'block';
+                    }
+                });
+            });
+
+            // Close modal when close button is clicked
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside of modal content
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Complete Use Case Diagram Modal functionality
+            const diagramModal = document.getElementById('useCaseDiagramModal');
+            const viewDiagramBtn = document.querySelector('.view-diagram-btn');
+            const diagramCloseBtn = diagramModal.querySelector('.close');
+
+            viewDiagramBtn.addEventListener('click', function() {
+                diagramModal.style.display = 'block';
+            });
+
+            diagramCloseBtn.addEventListener('click', function() {
+                diagramModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target === diagramModal) {
+                    diagramModal.style.display = 'none';
+                }
+            });
+
+            // Tab functionality for sequence diagrams
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    btn.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    
+                    window.scrollTo({
+                        top: targetSection.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Add animation on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections
+            document.querySelectorAll('section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
